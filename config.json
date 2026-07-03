@@ -1,0 +1,46 @@
+{
+  "greenhouse_boards": [
+    "stripe", "databricks", "rippling", "cloudflare", "twilio", "gustohq",
+    "coinbase", "robinhood", "airbnb", "duolingo", "figma", "notion",
+    "scaleai", "anthropic", "pinterest", "reddit", "dropbox", "brex",
+    "affirm", "plaid", "samsara", "verkada", "flexport", "nianticlabs",
+    "juspay", "groww", "zeptonow", "meesho", "urbancompany"
+  ],
+  "lever_companies": [
+    "netflix", "palantir", "atlassian", "plum", "cred", "dunzo",
+    "razorpay", "zetwerk", "slice", "netomi", "innovaccer", "postman",
+    "hackerrank", "whatfix", "kiwitech"
+  ],
+  "ashby_boards": [
+    "openai", "ramp", "linear", "replit", "cursor", "perplexity-ai",
+    "elevenlabs", "mistral", "sierra", "supabase", "posthog", "zerodha"
+  ],
+  "linkedin_searches": [
+    {"keywords": "software engineering intern 2027", "location": "Bengaluru, Karnataka, India"},
+    {"keywords": "machine learning intern", "location": "Bengaluru, Karnataka, India"},
+    {"keywords": "product intern fintech", "location": "India"},
+    {"keywords": "AI intern", "location": "India"},
+    {"keywords": "software intern", "location": "Singapore"}
+  ],
+  "role_keywords": [
+    "intern", "internship", "co-op", "coop", "fellowship", "fellow",
+    "early career", "campus", "new grad", "university", "apprentice"
+  ],
+  "domain_keywords": [
+    "software", "sde", "swe", "engineer", "engineering", "developer",
+    "machine learning", "ml", "ai", "data science", "data scientist",
+    "research", "product", "quant", "fintech", "payments", "backend",
+    "frontend", "full stack", "fullstack", "platform", "infrastructure"
+  ],
+  "location_boosts": {
+    "bangalore": 30, "bengaluru": 30, "india": 20, "remote": 15,
+    "hyderabad": 8, "mumbai": 8, "pune": 8, "gurgaon": 8, "gurugram": 8,
+    "singapore": 5, "dubai": 5, "london": 5, "new york": 5, "san francisco": 5
+  },
+  "title_boosts": {
+    "2027": 25, "intern": 20, "internship": 20, "machine learning": 12,
+    "ai": 10, "software": 10, "sde": 10, "data": 8, "product": 8,
+    "quant": 12, "research": 8, "fintech": 10, "fellowship": 10
+  },
+  "exclude_keywords": ["senior", "staff", "principal", "director", "manager, ", "lead ", "10+ years", "8+ years"]
+}
