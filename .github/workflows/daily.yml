@@ -24,6 +24,6 @@ jobs:
         run: |
           git config user.name "internship-radar-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add docs/index.html seen.json
+          git add docs seen.json
           git diff --cached --quiet || git commit -m "Daily scan $(date -u +%F)"
           git push

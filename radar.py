@@ -234,49 +234,21 @@ def ai_brief(items):
 
 
 def render(items, new_keys, brief):
+    """Write docs/data.json — the static docs/index.html app renders it."""
     now = datetime.now(timezone.utc).strftime("%d %b %Y, %H:%M UTC")
-    jobs = [i for i in items if i["kind"] == "job"]
-    comps = [i for i in items if i["kind"] == "competition"]
-
-    def rows(lst):
-        r = []
-        for i in lst:
-            new = '<span class="new">NEW</span> ' if i["key"] in new_keys else ""
-            r.append(f'<tr><td>{new}<a href="{escape(i["url"])}" target="_blank">'
-                     f'{escape(i["title"])}</a></td><td>{escape(i["source"])}</td>'
-                     f'<td>{escape(i["location"])}</td><td>{i["score"]}</td></tr>')
-        return "\n".join(r)
-
-    brief_html = (f'<div class="brief"><h2>🤖 AI brief</h2><p>'
-                  f'{escape(brief).replace(chr(10), "<br>")}</p></div>') if brief else ""
-    html = f"""<!doctype html><html><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Internship Radar</title><style>
-body{{font-family:-apple-system,Segoe UI,sans-serif;margin:0;background:#0f1117;color:#e6e6e6}}
-.wrap{{max-width:1000px;margin:0 auto;padding:24px}}
-h1{{margin:0 0 4px}} .sub{{color:#8b93a7;margin-bottom:20px}}
-table{{width:100%;border-collapse:collapse;margin-bottom:32px}}
-th{{text-align:left;color:#8b93a7;font-size:13px;border-bottom:1px solid #2a2f3d;padding:8px}}
-td{{padding:8px;border-bottom:1px solid #1d212c;font-size:14px}}
-a{{color:#7ab7ff;text-decoration:none}} a:hover{{text-decoration:underline}}
-.new{{background:#1f6f43;color:#fff;font-size:11px;padding:2px 6px;border-radius:4px}}
-.brief{{background:#161a24;border:1px solid #2a2f3d;border-radius:8px;padding:16px;margin-bottom:24px}}
-.brief h2{{margin:0 0 8px;font-size:16px}}
-h2{{font-size:18px}}</style></head><body><div class="wrap">
-<h1>🎯 Internship Radar</h1>
-<div class="sub">Last scan: {now} · {len(jobs)} roles · {len(comps)} competitions · {len(new_keys)} new today</div>
-{brief_html}
-<h2>Internships & early-career roles</h2>
-<table><tr><th>Role</th><th>Company / Source</th><th>Location</th><th>Score</th></tr>
-{rows(jobs)}</table>
-<h2>Competitions & hackathons</h2>
-<table><tr><th>Event</th><th>Source</th><th>Location</th><th>Score</th></tr>
-{rows(comps)}</table>
-<div class="sub">Sorted by relevance score (Bangalore/India/remote & intern-keyword boosted).
-Edit config.json to add companies or tune keywords.</div>
-</div></body></html>"""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    payload = {
+        "updated": now,
+        "brief": brief,
+        "items": [{"source": i["source"], "title": i["title"],
+                   "location": i["location"], "url": i["url"],
+                   "score": i["score"], "kind": i["kind"],
+                   "new": i["key"] in new_keys,
+                   "first_seen": i.get("first_seen", today)}
+                  for i in items],
+    }
     os.makedirs(DOCS, exist_ok=True)
-    open(os.path.join(DOCS, "index.html"), "w").write(html)
+    json.dump(payload, open(os.path.join(DOCS, "data.json"), "w"))
 
 
 def main():
@@ -300,9 +272,15 @@ def main():
         uniq.append(i)
     uniq.sort(key=lambda i: -i["score"])
 
-    old = set(json.load(open(SEEN_PATH))) if os.path.exists(SEEN_PATH) else set()
-    new_keys = {i["key"] for i in uniq} - old
-    json.dump(sorted(old | {i["key"] for i in uniq}), open(SEEN_PATH, "w"))
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    old = json.load(open(SEEN_PATH)) if os.path.exists(SEEN_PATH) else {}
+    if isinstance(old, list):  # migrate old format
+        old = {k: today for k in old}
+    new_keys = {i["key"] for i in uniq} - set(old)
+    for i in uniq:
+        i["first_seen"] = old.get(i["key"], today)
+    old.update({i["key"]: i["first_seen"] for i in uniq})
+    json.dump(old, open(SEEN_PATH, "w"))
 
     new_items = [i for i in uniq if i["key"] in new_keys]
     brief = ai_brief(new_items or uniq)
