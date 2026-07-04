@@ -1,0 +1,5 @@
+# docs/data.json and seen.json are bot-generated (rewritten daily by the
+# GitHub Actions scan). They shouldn't ever be manually merged — if a conflict
+# comes up, just keep whichever side; the next daily run overwrites it anyway.
+docs/data.json merge=ours -diff
+seen.json merge=ours -diff

@@ -328,9 +328,15 @@ def main():
         i["key"] = i["url"] or (i["source"] + i["title"])
         uniq.append(i)
 
-    # quality floor: drop long-tail junk below min_score
+    # quality floor: drop long-tail junk below min_score. Unknown/tier3
+    # companies need a stronger combined signal (location+keywords) to
+    # qualify, since there's no company-reputation signal backing them up —
+    # this is what keeps random small companies from drowning out
+    # top-tier ones in the feed.
     min_score = CONFIG.get("min_score", 0)
-    uniq = [i for i in uniq if i["score"] >= min_score]
+    min_score_tier3 = CONFIG.get("min_score_tier3", min_score)
+    uniq = [i for i in uniq
+            if i["score"] >= (min_score_tier3 if i["tier"] == "tier3" else min_score)]
 
     uniq.sort(key=lambda i: -i["score"])
 
