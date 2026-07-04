@@ -5,38 +5,51 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Internship Radar</title>
 <style>
-:root{--bg:#0b0d13;--card:#141824;--card2:#1a1f2e;--border:#252b3d;--text:#e8eaf0;--muted:#8b93a7;--accent:#6c8cff;--accent2:#9a6cff;--green:#2ea86c;--gold:#e8b93d}
+:root{
+  --bg:#f6f7fb;--card:#ffffff;--card2:#f0f2f8;--border:#e3e6ef;
+  --text:#1b1f2a;--muted:#6b7284;--accent:#3454d1;--accent2:#7c3aed;
+  --green:#1a8f5c;--gold:#b5860a;--tier1:#c2410c;--tier2:#3454d1;
+}
 *{box-sizing:border-box}
 body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;margin:0;background:var(--bg);color:var(--text)}
 .wrap{max-width:1080px;margin:0 auto;padding:20px 16px 60px}
 header{padding:28px 0 18px}
 h1{margin:0;font-size:28px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
 .sub{color:var(--muted);font-size:13px;margin-top:6px}
-.brief{background:linear-gradient(135deg,#151a2a,#171426);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin:14px 0;font-size:14px;line-height:1.55}
+.brief{background:linear-gradient(135deg,#eef1fc,#f5eefc);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin:14px 0;font-size:14px;line-height:1.55;color:#2a2f3d}
 .brief b.t{color:var(--accent);display:block;margin-bottom:6px;font-size:13px;text-transform:uppercase;letter-spacing:.06em}
 .controls{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 85%,transparent);padding:12px 0 14px}
 .searchrow{display:flex;gap:10px;flex-wrap:wrap}
 input[type=search]{flex:1;min-width:220px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 14px;font-size:14px;outline:none}
 input[type=search]:focus{border-color:var(--accent)}
 select{background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px 12px;font-size:13px;outline:none}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chiprow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chiplabel{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;align-self:center;margin-right:2px}
 .chip{background:var(--card);border:1px solid var(--border);border-radius:999px;color:var(--muted);padding:7px 14px;font-size:13px;cursor:pointer;user-select:none;transition:.15s}
 .chip:hover{border-color:var(--accent)}
 .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.chip.on.gold{background:var(--gold);border-color:var(--gold);color:#1a1a1a}
-.count{color:var(--muted);font-size:13px;margin:10px 2px}
+.chip.on.gold{background:var(--gold);border-color:var(--gold);color:#fff}
+.count{color:var(--muted);font-size:13px;margin:14px 2px 10px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;transition:.15s;position:relative}
-.card:hover{border-color:#3a4360;transform:translateY(-1px)}
-.card a.title{color:var(--text);font-weight:600;font-size:15px;text-decoration:none;line-height:1.35;padding-right:34px;display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 16px 14px;display:flex;flex-direction:column;gap:6px;transition:.15s;position:relative;box-shadow:0 1px 2px rgba(20,24,40,.04)}
+.card:hover{border-color:var(--accent);box-shadow:0 4px 14px rgba(20,24,40,.08);transform:translateY(-1px)}
+.card.tier1{border-left:4px solid var(--tier1)}
+.card.tier2{border-left:4px solid var(--tier2)}
+.companyrow{display:flex;align-items:center;gap:6px;padding-right:30px}
+.company{font-weight:700;font-size:17px;color:var(--text);letter-spacing:-.01em}
+.tiericon{font-size:13px}
+.card a.title{color:var(--muted);font-weight:500;font-size:13.5px;text-decoration:none;line-height:1.4;display:block}
 .card a.title:hover{color:var(--accent)}
-.meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
+.meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:11.5px;color:var(--muted);margin-top:4px}
 .badge{border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600}
-.b-new{background:rgba(46,168,108,.18);color:#4cd394}
-.b-comp{background:rgba(232,185,61,.15);color:var(--gold)}
-.b-job{background:rgba(108,140,255,.15);color:var(--accent)}
+.b-new{background:rgba(26,143,92,.12);color:var(--green)}
+.b-comp{background:rgba(181,134,10,.12);color:var(--gold)}
+.b-job{background:rgba(52,84,209,.1);color:var(--accent)}
+.b-ml{background:rgba(124,58,237,.1);color:var(--accent2)}
+.b-tech{background:rgba(52,84,209,.1);color:var(--accent)}
 .b-score{background:var(--card2);color:var(--muted)}
-.star{position:absolute;top:12px;right:12px;background:none;border:none;font-size:20px;cursor:pointer;color:#3a4360;transition:.15s;padding:4px;line-height:1}
+.star{position:absolute;top:14px;right:12px;background:none;border:none;font-size:20px;cursor:pointer;color:#d4d8e4;transition:.15s;padding:4px;line-height:1}
 .star:hover{transform:scale(1.2)}
 .star.on{color:var(--gold)}
 .empty{color:var(--muted);text-align:center;padding:60px 0;font-size:15px}
@@ -53,7 +66,7 @@ footer{color:var(--muted);font-size:12px;margin-top:40px;text-align:center}
 <div id="brief"></div>
 <div class="controls">
   <div class="searchrow">
-    <input type="search" id="q" placeholder="Search roles, companies… (e.g. ML, fintech, Groww)">
+    <input type="search" id="q" placeholder="Search roles, companies… (e.g. ML, Palantir, Groww)">
     <select id="src"><option value="">All sources</option></select>
     <select id="sort">
       <option value="score">Sort: relevance</option>
@@ -61,21 +74,37 @@ footer{color:var(--muted);font-size:12px;margin-top:40px;text-align:center}
       <option value="az">Sort: A–Z</option>
     </select>
   </div>
-  <div class="chips">
-    <span class="chip" data-f="kind:job">💼 Jobs</span>
-    <span class="chip" data-f="kind:competition">🏆 Competitions</span>
-    <span class="chip" data-f="loc:blr">📍 Bangalore</span>
-    <span class="chip" data-f="loc:india">🇮🇳 India</span>
-    <span class="chip" data-f="loc:remote">🌐 Remote</span>
-    <span class="chip" data-f="loc:abroad">✈️ Abroad</span>
-    <span class="chip" data-f="new">✨ New today</span>
-    <span class="chip gold" data-f="saved">⭐ Saved</span>
+  <div class="chiprow">
+    <span class="chiplabel">Role</span>
+    <div class="chips">
+      <span class="chip" data-f="cat:AI/ML">🧠 AI/ML</span>
+      <span class="chip" data-f="cat:Tech">💻 Tech/SWE</span>
+      <span class="chip" data-f="kind:job">💼 Jobs</span>
+      <span class="chip" data-f="kind:competition">🏆 Competitions</span>
+    </div>
+  </div>
+  <div class="chiprow">
+    <span class="chiplabel">Location</span>
+    <div class="chips">
+      <span class="chip" data-f="loc:blr">📍 Bangalore</span>
+      <span class="chip" data-f="loc:india">🇮🇳 India</span>
+      <span class="chip" data-f="loc:remote">🌐 Remote</span>
+      <span class="chip" data-f="loc:abroad">✈️ Abroad</span>
+    </div>
+  </div>
+  <div class="chiprow">
+    <span class="chiplabel">Other</span>
+    <div class="chips">
+      <span class="chip" data-f="tier1">🔥 Top-tier only</span>
+      <span class="chip" data-f="new">✨ New today</span>
+      <span class="chip gold" data-f="saved">⭐ Saved</span>
+    </div>
   </div>
 </div>
 <div class="count" id="count"></div>
 <div class="grid" id="grid"></div>
 <div class="empty" id="empty" style="display:none"></div>
-<footer>Auto-updates daily at 8:00 AM IST · scoring boosts Bangalore/India/remote & intern keywords · edit config.json to tune</footer>
+<footer>Auto-updates daily at 8:00 AM IST · scoring boosts top-tier companies + Bangalore/India/remote · edit config.json to tune</footer>
 </div>
 <script>
 let DATA={items:[]},filters=new Set(),saved={};
@@ -89,13 +118,17 @@ function locClass(l){l=(l||'').toLowerCase();
   if(!l||l==='see post')return'other';return'abroad'}
 function key(i){return i.url||i.source+i.title}
 function esc(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function tierIcon(t){return t==='tier1'?'🔥':t==='tier2'?'⭐':''}
 function render(){
   const q=$('q').value.toLowerCase().trim(),src=$('src').value,sort=$('sort').value;
   let items=DATA.items.filter(i=>{
-    if(q&&!(i.title+' '+i.source+' '+i.location).toLowerCase().includes(q))return false;
+    if(q&&!(i.title+' '+i.company+' '+i.source+' '+i.location).toLowerCase().includes(q))return false;
     if(src&&i.source!==src)return false;
     if(filters.has('kind:job')&&i.kind!=='job')return false;
     if(filters.has('kind:competition')&&i.kind!=='competition')return false;
+    if(filters.has('cat:AI/ML')&&i.category!=='AI/ML')return false;
+    if(filters.has('cat:Tech')&&i.category!=='Tech')return false;
+    if(filters.has('tier1')&&i.tier!=='tier1')return false;
     const lc=locClass(i.location);
     const locF=[...filters].filter(f=>f.startsWith('loc:'));
     if(locF.length&&!locF.some(f=>f==='loc:'+lc||(f==='loc:india'&&lc==='blr')))return false;
@@ -103,18 +136,21 @@ function render(){
     if(filters.has('saved')&&!saved[key(i)])return false;
     return true});
   if(sort==='new')items.sort((a,b)=>(b.first_seen||'').localeCompare(a.first_seen||'')||b.score-a.score);
-  else if(sort==='az')items.sort((a,b)=>a.title.localeCompare(b.title));
+  else if(sort==='az')items.sort((a,b)=>(a.company||'').localeCompare(b.company||''));
   else items.sort((a,b)=>b.score-a.score);
   $('count').textContent=items.length+' of '+DATA.items.length+' opportunities';
   $('grid').innerHTML=items.map(i=>{
     const k=key(i),on=saved[k]?'on':'';
-    return `<div class="card">
+    const catBadge=i.category==='AI/ML'?'<span class="badge b-ml">AI/ML</span>':'<span class="badge b-tech">Tech</span>';
+    return `<div class="card ${i.tier==='tier1'?'tier1':i.tier==='tier2'?'tier2':''}">
       <button class="star ${on}" data-k="${esc(k)}" title="Save">★</button>
+      <div class="companyrow"><span class="tiericon">${tierIcon(i.tier)}</span><span class="company">${esc(i.company||i.source)}</span></div>
       <a class="title" href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a>
       <div class="meta">
         ${i.new?'<span class="badge b-new">NEW</span>':''}
         <span class="badge ${i.kind==='competition'?'b-comp':'b-job'}">${i.kind==='competition'?'Competition':'Job'}</span>
-        <span>${esc(i.source)}</span>·<span>${esc(i.location||'—')}</span>
+        ${catBadge}
+        <span>${esc(i.location||'—')}</span>
         <span class="badge b-score">score ${i.score}</span>
       </div></div>`}).join('');
   $('empty').style.display=items.length?'none':'block';

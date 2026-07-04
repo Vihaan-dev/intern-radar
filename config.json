@@ -15,23 +15,69 @@
     "openai", "ramp", "linear", "replit", "cursor", "perplexity-ai",
     "elevenlabs", "mistral", "sierra", "supabase", "posthog", "zerodha"
   ],
+
+  "enabled_sources": ["greenhouse", "lever", "ashby", "remoteok", "devpost", "unstop"],
+
   "linkedin_searches": [
     {"keywords": "software engineering intern 2027", "location": "Bengaluru, Karnataka, India"},
     {"keywords": "machine learning intern", "location": "Bengaluru, Karnataka, India"},
-    {"keywords": "product intern fintech", "location": "India"},
     {"keywords": "AI intern", "location": "India"},
     {"keywords": "software intern", "location": "Singapore"}
   ],
+
+  "company_display_names": {
+    "openai": "OpenAI", "anthropic": "Anthropic", "scaleai": "Scale AI",
+    "palantir": "Palantir", "perplexity-ai": "Perplexity", "mistral": "Mistral AI",
+    "elevenlabs": "ElevenLabs", "cursor": "Cursor", "replit": "Replit",
+    "stripe": "Stripe", "databricks": "Databricks", "cloudflare": "Cloudflare",
+    "twilio": "Twilio", "coinbase": "Coinbase", "robinhood": "Robinhood",
+    "airbnb": "Airbnb", "duolingo": "Duolingo", "figma": "Figma",
+    "notion": "Notion", "pinterest": "Pinterest", "reddit": "Reddit",
+    "dropbox": "Dropbox", "brex": "Brex", "affirm": "Affirm", "plaid": "Plaid",
+    "samsara": "Samsara", "verkada": "Verkada", "flexport": "Flexport",
+    "nianticlabs": "Niantic", "juspay": "Juspay", "groww": "Groww",
+    "zeptonow": "Zepto", "meesho": "Meesho", "urbancompany": "Urban Company",
+    "netflix": "Netflix", "atlassian": "Atlassian", "plum": "Plum",
+    "cred": "CRED", "dunzo": "Dunzo", "razorpay": "Razorpay",
+    "zetwerk": "Zetwerk", "slice": "Slice", "netomi": "Netomi",
+    "innovaccer": "Innovaccer", "postman": "Postman", "hackerrank": "HackerRank",
+    "whatfix": "Whatfix", "kiwitech": "KiwiTech", "ramp": "Ramp",
+    "linear": "Linear", "sierra": "Sierra", "supabase": "Supabase",
+    "posthog": "PostHog", "zerodha": "Zerodha", "rippling": "Rippling",
+    "gustohq": "Gusto"
+  },
+
+  "company_tiers": {
+    "tier1": ["openai", "anthropic", "scaleai", "palantir", "perplexity-ai",
+              "mistral", "stripe", "databricks", "cursor", "elevenlabs"],
+    "tier2": ["netflix", "cloudflare", "twilio", "coinbase", "robinhood",
+              "airbnb", "figma", "notion", "atlassian", "ramp", "linear",
+              "replit", "sierra", "supabase", "posthog", "reddit", "dropbox",
+              "brex", "affirm", "plaid", "samsara", "verkada", "flexport",
+              "duolingo", "pinterest", "razorpay", "cred", "zerodha",
+              "postman", "groww", "zetwerk"]
+  },
+  "tier_boosts": {"tier1": 120, "tier2": 60, "tier3": 0},
+
   "role_keywords": [
     "intern", "internship", "co-op", "coop", "fellowship", "fellow",
-    "early career", "campus", "new grad", "university", "apprentice"
+    "new grad", "university", "apprentice"
   ],
-  "domain_keywords": [
-    "software", "sde", "swe", "engineer", "engineering", "developer",
-    "machine learning", "ml", "ai", "data science", "data scientist",
-    "research", "product", "quant", "fintech", "payments", "backend",
-    "frontend", "full stack", "fullstack", "platform", "infrastructure"
+
+  "ai_ml_keywords": [
+    "machine learning", "\\bml\\b", "\\bai\\b", "artificial intelligence",
+    "deep learning", "\\bnlp\\b", "computer vision", "\\bllm\\b",
+    "data scientist", "data science", "research scientist",
+    "applied scientist", "research engineer", "reinforcement learning"
   ],
+  "tech_keywords": [
+    "software", "\\bsde\\b", "\\bswe\\b", "developer", "engineer",
+    "engineering", "backend", "back-end", "frontend", "front-end",
+    "full stack", "fullstack", "platform", "infrastructure", "devops",
+    "site reliability", "\\bsre\\b", "systems", "cloud", "security",
+    "quant", "quantitative", "data engineer"
+  ],
+
   "location_boosts": {
     "bangalore": 30, "bengaluru": 30, "india": 20, "remote": 15,
     "hyderabad": 8, "mumbai": 8, "pune": 8, "gurgaon": 8, "gurugram": 8,
@@ -39,8 +85,18 @@
   },
   "title_boosts": {
     "2027": 25, "intern": 20, "internship": 20, "machine learning": 12,
-    "ai": 10, "software": 10, "sde": 10, "data": 8, "product": 8,
-    "quant": 12, "research": 8, "fintech": 10, "fellowship": 10
+    "ai": 10, "software": 10, "sde": 10, "data": 8, "research": 8,
+    "quant": 12, "fellowship": 10
   },
-  "exclude_keywords": ["senior", "staff", "principal", "director", "manager, ", "lead ", "10+ years", "8+ years"]
+  "exclude_keywords": [
+    "senior", "staff", "principal", "director", "manager, ", "lead ",
+    "10+ years", "8+ years", "content", "marketing", "sales", "recruit",
+    "human resources", " hr ", "hr intern", "business development",
+    "customer success", "customer support", "growth intern",
+    "campus ambassador", "video editor", "e-commerce executive",
+    "digital media internship", "corporate development", "communications",
+    "legal intern", "operations intern"
+  ],
+  "min_score": 15,
+  "max_items": 150
 }
