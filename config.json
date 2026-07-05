@@ -59,11 +59,6 @@
   },
   "tier_boosts": {"tier1": 120, "tier2": 60, "tier3": 0},
 
-  "role_keywords": [
-    "intern", "internship", "co-op", "coop", "fellowship", "fellow",
-    "new grad", "university", "apprentice"
-  ],
-
   "ai_ml_keywords": [
     "machine learning", "\\bml\\b", "\\bai\\b", "artificial intelligence",
     "deep learning", "\\bnlp\\b", "computer vision", "\\bllm\\b",
@@ -79,25 +74,26 @@
   ],
 
   "location_boosts": {
-    "bangalore": 30, "bengaluru": 30, "india": 20, "remote": 15,
-    "hyderabad": 8, "mumbai": 8, "pune": 8, "gurgaon": 8, "gurugram": 8,
+    "bangalore": 45, "bengaluru": 45, "mumbai": 35, "india": 30, "remote": 15,
+    "hyderabad": 8, "pune": 8, "gurgaon": 8, "gurugram": 8,
     "singapore": 5, "dubai": 5, "london": 5, "new york": 5, "san francisco": 5
   },
   "title_boosts": {
-    "2027": 25, "intern": 20, "internship": 20, "machine learning": 12,
-    "ai": 10, "software": 10, "sde": 10, "data": 8, "research": 8,
-    "quant": 12, "fellowship": 10
+    "2027": 25, "2028": 20, "summer": 18, "intern": 20, "internship": 20,
+    "machine learning": 12, "ai": 10, "software": 10, "sde": 10, "data": 8,
+    "research": 8, "quant": 12, "fellowship": 10
   },
   "exclude_keywords": [
     "senior", "staff", "principal", "director", "manager, ", "lead ",
-    "10+ years", "8+ years", "content", "marketing", "sales", "recruit",
+    "content", "marketing", "sales", "recruit",
     "human resources", " hr ", "hr intern", "business development",
     "customer success", "customer support", "growth intern",
     "campus ambassador", "video editor", "e-commerce executive",
     "digital media internship", "corporate development", "communications",
-    "legal intern", "operations intern"
+    "legal intern", "operations intern", "internal audit", "internal auditor",
+    "audit associate", "audit manager"
   ],
   "min_score": 15,
-  "min_score_tier3": 45,
-  "max_items": 80
+  "min_score_tier3": 35,
+  "max_items": 150
 }

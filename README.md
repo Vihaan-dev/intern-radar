@@ -34,12 +34,14 @@ Everything lives in `config.json`:
 
 - `greenhouse_boards` / `lever_companies` / `ashby_boards` — company slugs. To find a slug: open a company's careers page; if the URL is `boards.greenhouse.io/acme` or `jobs.lever.co/acme` or `jobs.ashbyhq.com/acme`, the slug is `acme`. Add the display name to `company_display_names` and the tier to `company_tiers.tier1` / `tier2` if it's a top company.
 - `company_tiers` / `tier_boosts` — controls which companies get ranked to the top regardless of keyword match.
-- `ai_ml_keywords` / `tech_keywords` — a listing must hit one of these (in addition to a role keyword like "intern") or it's dropped entirely.
+- `ai_ml_keywords` / `tech_keywords` — a listing must hit one of these or it's dropped entirely.
+- The actual "is this an internship?" check is a word-boundary regex (`ROLE_RE`) in `radar.py`, not config — it has to be regex, not a plain substring list, because a naive `"intern" in title` also matches "**intern**al", "**intern**ational", "**intern**et". That bug is what let full-time roles like "Internal Audit SOX Associate Manager" through before.
+- `radar.py` also has `EXPERIENCE_RE`, which excludes any listing whose title/text mentions an explicit experience requirement ("5+ years experience", "3-5 yrs exp") — a stronger, more general guard than hardcoding "senior"/"staff" in `exclude_keywords`.
 - `enabled_sources` — which fetchers run. Add `"linkedin"` / `"hn"` back in if you want those (noisier) sources.
 - `linkedin_searches` — keyword + location pairs (only used if `linkedin` is enabled).
-- `location_boosts` / `title_boosts` — tune the scoring.
-- `exclude_keywords` — filter out senior roles and non-tech internship types (content, marketing, HR, BD, campus ambassador, etc.).
-- `min_score` / `min_score_tier3` / `max_items` — quality floor (tier1/tier2 companies just need `min_score`; unrecognized/tier3 companies need the higher `min_score_tier3` — location+keyword boosts alone rarely clear it, so obscure companies only show up when the match is genuinely strong) and feed size cap.
+- `location_boosts` / `title_boosts` — tune the scoring. Bangalore/Mumbai/India are weighted heaviest; "2028" (grad-class label) and "summer" are boosted too, so summer-2027-for-class-of-2028 postings rank above generic year-round/full-year internship programs (which aren't excluded, just weighted lower).
+- `exclude_keywords` — filter out senior roles and non-tech internship types (content, marketing, HR, BD, campus ambassador, internal audit, etc.). Checked against title + any available description text.
+- `min_score` / `min_score_tier3` / `max_items` — quality floor (tier1/tier2 companies just need `min_score`; unrecognized/tier3 companies need the higher `min_score_tier3`, a middle ground between wide-open and too-strict — obscure companies show up when the match is genuinely strong, not on keyword overlap alone) and feed size cap (150 — company postings across many cities are grouped into one card on the dashboard, so this isn't as limiting as it sounds).
 
 ## Run locally (optional)
 

@@ -52,6 +52,11 @@ select{background:var(--card);border:1px solid var(--border);border-radius:10px;
 .star{position:absolute;top:14px;right:12px;background:none;border:none;font-size:20px;cursor:pointer;color:#d4d8e4;transition:.15s;padding:4px;line-height:1}
 .star:hover{transform:scale(1.2)}
 .star.on{color:var(--gold)}
+.title-plain{color:var(--muted);font-weight:500;font-size:13.5px;line-height:1.4;display:block}
+.loc-count{color:var(--accent);font-size:11.5px;font-weight:600}
+.loclist{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
+.locchip{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:2px 7px;font-size:11px;color:var(--text);text-decoration:none}
+.locchip:hover{border-color:var(--accent);color:var(--accent)}
 .empty{color:var(--muted);text-align:center;padding:60px 0;font-size:15px}
 footer{color:var(--muted);font-size:12px;margin-top:40px;text-align:center}
 @media(max-width:600px){.grid{grid-template-columns:1fr}}
@@ -116,9 +121,27 @@ function locClass(l){l=(l||'').toLowerCase();
   if(INDIA.some(k=>l.includes(k)))return'india';
   if(l.includes('remote')||l.includes('online'))return'remote';
   if(!l||l==='see post')return'other';return'abroad'}
-function key(i){return i.url||i.source+i.title}
+function key(i){return (i.company||i.source)+'|||'+i.title}
 function esc(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function tierIcon(t){return t==='tier1'?'🔥':t==='tier2'?'⭐':''}
+function groupItems(items){
+  // Same company + same title posted across many cities (Palantir-style) collapses
+  // into one card with an expandable location list, instead of N near-identical cards.
+  const map=new Map();
+  for(const i of items){
+    const k=key(i);
+    if(!map.has(k)){
+      map.set(k,{...i,_locs:[{location:i.location,url:i.url}]});
+    }else{
+      const g=map.get(k);
+      g._locs.push({location:i.location,url:i.url});
+      g.score=Math.max(g.score,i.score);
+      g.new=g.new||i.new;
+      if((i.first_seen||'')>(g.first_seen||''))g.first_seen=i.first_seen;
+    }
+  }
+  return [...map.values()];
+}
 function render(){
   const q=$('q').value.toLowerCase().trim(),src=$('src').value,sort=$('sort').value;
   let items=DATA.items.filter(i=>{
@@ -135,26 +158,34 @@ function render(){
     if(filters.has('new')&&!i.new)return false;
     if(filters.has('saved')&&!saved[key(i)])return false;
     return true});
-  if(sort==='new')items.sort((a,b)=>(b.first_seen||'').localeCompare(a.first_seen||'')||b.score-a.score);
-  else if(sort==='az')items.sort((a,b)=>(a.company||'').localeCompare(b.company||''));
-  else items.sort((a,b)=>b.score-a.score);
-  $('count').textContent=items.length+' of '+DATA.items.length+' opportunities';
-  $('grid').innerHTML=items.map(i=>{
-    const k=key(i),on=saved[k]?'on':'';
-    const catBadge=i.category==='AI/ML'?'<span class="badge b-ml">AI/ML</span>':'<span class="badge b-tech">Tech</span>';
-    return `<div class="card ${i.tier==='tier1'?'tier1':i.tier==='tier2'?'tier2':''}">
+  const postingCount=items.length;
+  let groups=groupItems(items);
+  if(sort==='new')groups.sort((a,b)=>(b.first_seen||'').localeCompare(a.first_seen||'')||b.score-a.score);
+  else if(sort==='az')groups.sort((a,b)=>(a.company||'').localeCompare(b.company||''));
+  else groups.sort((a,b)=>b.score-a.score);
+  $('count').textContent=groups.length+' opportunities'+(postingCount!==groups.length?` (${postingCount} postings across locations)`:'')+' of '+DATA.items.length+' total';
+  $('grid').innerHTML=groups.map(g=>{
+    const k=key(g),on=saved[k]?'on':'';
+    const catBadge=g.category==='AI/ML'?'<span class="badge b-ml">AI/ML</span>':'<span class="badge b-tech">Tech</span>';
+    const single=g._locs.length===1;
+    const titleHtml=single
+      ?`<a class="title" href="${esc(g._locs[0].url)}" target="_blank" rel="noopener">${esc(g.title)}</a>`
+      :`<span class="title-plain">${esc(g.title)}</span><span class="loc-count">${g._locs.length} locations — click one below</span>`;
+    const locsHtml=single?'':`<div class="loclist">${g._locs.map(l=>`<a href="${esc(l.url)}" target="_blank" rel="noopener" class="locchip">${esc(l.location||'—')}</a>`).join('')}</div>`;
+    return `<div class="card ${g.tier==='tier1'?'tier1':g.tier==='tier2'?'tier2':''}">
       <button class="star ${on}" data-k="${esc(k)}" title="Save">★</button>
-      <div class="companyrow"><span class="tiericon">${tierIcon(i.tier)}</span><span class="company">${esc(i.company||i.source)}</span></div>
-      <a class="title" href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a>
+      <div class="companyrow"><span class="tiericon">${tierIcon(g.tier)}</span><span class="company">${esc(g.company||g.source)}</span></div>
+      ${titleHtml}
       <div class="meta">
-        ${i.new?'<span class="badge b-new">NEW</span>':''}
-        <span class="badge ${i.kind==='competition'?'b-comp':'b-job'}">${i.kind==='competition'?'Competition':'Job'}</span>
+        ${g.new?'<span class="badge b-new">NEW</span>':''}
+        <span class="badge ${g.kind==='competition'?'b-comp':'b-job'}">${g.kind==='competition'?'Competition':'Job'}</span>
         ${catBadge}
-        <span>${esc(i.location||'—')}</span>
-        <span class="badge b-score">score ${i.score}</span>
-      </div></div>`}).join('');
-  $('empty').style.display=items.length?'none':'block';
-  $('empty').textContent=filters.has('saved')&&!items.length?'No saved items yet — hit the ★ on any card.':'Nothing matches — clear some filters.';
+        ${single?`<span>${esc(g._locs[0].location||'—')}</span>`:''}
+        <span class="badge b-score">score ${g.score}</span>
+      </div>
+      ${locsHtml}</div>`}).join('');
+  $('empty').style.display=groups.length?'none':'block';
+  $('empty').textContent=filters.has('saved')&&!groups.length?'No saved items yet — hit the ★ on any card.':'Nothing matches — clear some filters.';
   document.querySelectorAll('.star').forEach(b=>b.onclick=()=>{
     const k=b.dataset.k;if(saved[k]){delete saved[k]}else{saved[k]=1}
     localStorage.setItem('radar-saved',JSON.stringify(saved));render()});

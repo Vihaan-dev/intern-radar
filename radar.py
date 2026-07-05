@@ -31,6 +31,19 @@ DISPLAY_NAMES = CONFIG.get("company_display_names", {})
 AI_ML_RE = [re.compile(k) for k in CONFIG["ai_ml_keywords"]]
 TECH_RE = [re.compile(k) for k in CONFIG["tech_keywords"]]
 
+# Word-boundary role match — a plain substring check on "intern" also matches
+# "internal"/"international"/"internet", which is how full-time senior roles
+# like "Internal Audit SOX Associate Manager" were sneaking in before.
+ROLE_RE = re.compile(
+    r"\b(intern(?:ship)?s?|co-?op|fellowships?|fellows?|new\s*grad(?:uate)?|"
+    r"university|apprentice(?:ship)?)\b", re.I)
+
+# Catch explicit experience requirements ("5+ years experience", "3-5 yrs exp")
+# wherever they show up in the title/text — these are full-time-role signals
+# that have nothing to do with a student internship, regardless of tier.
+EXPERIENCE_RE = re.compile(
+    r"\b(\d+)\+?\s*(?:-\s*\d+\s*)?\s*years?\s*(?:of\s*)?(?:experience|exp\.?)\b", re.I)
+
 
 def get_json(url, timeout=20):
     try:
@@ -78,10 +91,13 @@ def categorize(title, text=""):
 def matches(title, text=""):
     t = (title or "").lower()
     x = (text or "").lower()
-    if any(k in t for k in CONFIG["exclude_keywords"]):
+    blob = f"{t} {x}"
+    if any(k in blob for k in CONFIG["exclude_keywords"]):
         return False
-    role = any(k in t or k in x for k in CONFIG["role_keywords"])
-    if not role:
+    exp = EXPERIENCE_RE.search(blob)
+    if exp and int(exp.group(1)) >= 2:
+        return False
+    if not (ROLE_RE.search(t) or ROLE_RE.search(x)):
         return False
     return categorize(title, text) is not None
 
