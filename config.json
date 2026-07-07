@@ -25,6 +25,24 @@
     {"keywords": "software intern", "location": "Singapore"}
   ],
 
+  "competition_orgs_allow": [
+    "flipkart", "amazon", "google", "microsoft", "meta", "openai", "anthropic",
+    "goldman", "jpmorgan", "j.p. morgan", "morgan stanley", "american express",
+    "amex", "mastercard", "visa", "barclays", "citi", "hsbc", "deutsche bank",
+    "wells fargo", "blackrock", "de shaw", "optiver", "tower research",
+    "jane street", "hudson river", "quantbox", "graviton", "alphagrep",
+    "tata", "reliance", "aditya birla", "mahindra", "itc", "hul", "unilever",
+    "nestle", "p&g", "procter", "loreal", "l'oreal", "accenture", "deloitte",
+    "kpmg", "pwc", "mckinsey", "bain", "bcg", "boston consulting",
+    "uber", "walmart", "meesho", "zepto", "swiggy", "zomato", "ola", "phonepe",
+    "paytm", "razorpay", "cred", "groww", "zerodha", "juspay", "atlassian",
+    "salesforce", "adobe", "nvidia", "intel", "qualcomm", "samsung", "texas instruments",
+    "arcesium", "databricks", "stripe", "netapp", "cisco", "oracle", "sap",
+    "siemens", "bosch", "general electric", "honeywell", "shell", "exxon", "chevron",
+    "airbus", "boeing", "isro", "drdo", "mlh", "kaggle",
+    "ethindia", "devfolio", "smart india hackathon"
+  ],
+
   "company_display_names": {
     "openai": "OpenAI", "anthropic": "Anthropic", "scaleai": "Scale AI",
     "palantir": "Palantir", "perplexity-ai": "Perplexity", "mistral": "Mistral AI",
@@ -93,6 +111,7 @@
     "legal intern", "operations intern", "internal audit", "internal auditor",
     "audit associate", "audit manager"
   ],
+  "min_term_year": 2026,
   "min_score": 15,
   "min_score_tier3": 35,
   "max_items": 150

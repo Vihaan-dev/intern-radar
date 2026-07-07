@@ -7,8 +7,10 @@ Unstop competitions.
 
 Quality controls:
   - Every role is tagged AI/ML or Tech (anything else, e.g. content/marketing/HR/BD, is dropped).
-  - Company-tier boost so top-tier companies (OpenAI, Anthropic, Scale AI, Palantir, Stripe...)
-    always rank above random/unknown companies, regardless of keyword overlap.
+  - Every role is typed: internship / fellowship / early-career — UI filters on this.
+  - Term year is extracted from titles ("Summer 2026" vs "2027") so past-term postings
+    can be hidden by default.
+  - Company-tier boost so top-tier companies always rank above unknown ones.
   - min_score floor + max_items cap keep the feed from drowning in long-tail noise.
 
 Optional: set GEMINI_API_KEY env var to get an AI-written daily brief
@@ -31,18 +33,35 @@ DISPLAY_NAMES = CONFIG.get("company_display_names", {})
 AI_ML_RE = [re.compile(k) for k in CONFIG["ai_ml_keywords"]]
 TECH_RE = [re.compile(k) for k in CONFIG["tech_keywords"]]
 
-# Word-boundary role match — a plain substring check on "intern" also matches
-# "internal"/"international"/"internet", which is how full-time senior roles
-# like "Internal Audit SOX Associate Manager" were sneaking in before.
-ROLE_RE = re.compile(
-    r"\b(intern(?:ship)?s?|co-?op|fellowships?|fellows?|new\s*grad(?:uate)?|"
-    r"university|apprentice(?:ship)?)\b", re.I)
+# Word-boundary role matching — plain substring "intern" also matches
+# "internal"/"international", which is how full-time roles snuck in before.
+INTERN_RE = re.compile(r"\b(intern(?:ship)?s?|co-?op)\b", re.I)
+FELLOW_RE = re.compile(r"\b(fellowships?|fellows?)\b", re.I)
+GRAD_RE = re.compile(
+    r"\b(new\s*grad(?:uate)?|university\s*grad(?:uate)?|campus\s*hire|"
+    r"apprentice(?:ship)?|early\s*career|graduate\s*(?:engineer|program|trainee))\b", re.I)
 
-# Catch explicit experience requirements ("5+ years experience", "3-5 yrs exp")
-# wherever they show up in the title/text — these are full-time-role signals
-# that have nothing to do with a student internship, regardless of tier.
+# Explicit experience requirements ("5+ years experience") = full-time signal.
 EXPERIENCE_RE = re.compile(
     r"\b(\d+)\+?\s*(?:-\s*\d+\s*)?\s*years?\s*(?:of\s*)?(?:experience|exp\.?)\b", re.I)
+
+TERM_RE = re.compile(r"\b(20\d{2})\b")
+
+
+def role_type(title, text=""):
+    blob = f"{title or ''} {text or ''}"
+    if INTERN_RE.search(blob):
+        return "internship"
+    if FELLOW_RE.search(blob):
+        return "fellowship"
+    if GRAD_RE.search(blob):
+        return "grad"
+    return None
+
+
+def term_year(title):
+    years = [int(y) for y in TERM_RE.findall(title or "")]
+    return max(years) if years else None
 
 
 def get_json(url, timeout=20):
@@ -79,7 +98,7 @@ def company_tier(slug_or_name):
 
 
 def categorize(title, text=""):
-    """Return 'AI/ML', 'Tech', or None (i.e. excluded — not a role we care about)."""
+    """Return 'AI/ML', 'Tech', or None (excluded)."""
     blob = f"{title or ''} {text or ''}".lower()
     if any(p.search(blob) for p in AI_ML_RE):
         return "AI/ML"
@@ -97,8 +116,11 @@ def matches(title, text=""):
     exp = EXPERIENCE_RE.search(blob)
     if exp and int(exp.group(1)) >= 2:
         return False
-    if not (ROLE_RE.search(t) or ROLE_RE.search(x)):
+    if role_type(title, text) is None:
         return False
+    yr = term_year(title)
+    if yr and yr < CONFIG.get("min_term_year", 2026):
+        return False  # stale posting for a past cycle
     return categorize(title, text) is not None
 
 
@@ -121,7 +143,10 @@ def make_item(source, title, location, url, kind, company_slug=None, text=""):
                 score=score(title, location, company_slug), kind=kind,
                 company=display_name(company_slug) if company_slug else source.split(" (")[0],
                 tier=company_tier(company_slug) if company_slug else "tier3",
-                category=categorize(title, text) or "Tech")
+                category=categorize(title, text) or "Tech",
+                role_type=("competition" if kind == "competition"
+                           else role_type(title, text) or "internship"),
+                term=term_year(title))
 
 
 def fetch_greenhouse():
@@ -169,6 +194,17 @@ def fetch_ashby():
     return out
 
 
+COMP_ALLOW_RE = [re.compile(r"\b" + re.escape(k.strip().lower()) + r"\b")
+                 for k in CONFIG.get("competition_orgs_allow", [])]
+
+
+def ppo_track(org, title=""):
+    """True if the competition is run by a reputed company (PPI/PPO potential),
+    not a random college fest. Word-boundary match against the config whitelist."""
+    blob = f"{org or ''} {title or ''}".lower()
+    return any(p.search(blob) for p in COMP_ALLOW_RE)
+
+
 def fetch_devpost():
     out = []
     data = get_json("https://devpost.com/api/hackathons?status[]=upcoming&status[]=open")
@@ -176,9 +212,14 @@ def fetch_devpost():
         return out
     for h in data.get("hackathons", [])[:25]:
         title = h.get("title", "")
-        prize = h.get("prize_amount", "")
-        prize = re.sub(r"<[^>]+>", "", str(prize))
+        prize = re.sub(r"<[^>]+>", "", str(h.get("prize_amount", "")))
         loc = (h.get("displayed_location") or {}).get("location", "")
+        orgs = " ".join(str(o) for o in (h.get("organization_name"), title))
+        # Devpost is corporate-hackathon-heavy but still gate on the whitelist,
+        # with big prize pools (>= $20k) as an alternate quality signal.
+        prize_num = int(re.sub(r"[^\d]", "", prize) or 0)
+        if not (ppo_track(orgs) or prize_num >= 20000):
+            continue
         full_title = f"{title} ({prize})" if prize else title
         item = make_item("Devpost", full_title, loc, h.get("url", ""), "competition")
         item["score"] += 15
@@ -192,15 +233,17 @@ def fetch_unstop():
     out = []
     for opp in ("hackathons", "competitions"):
         data = get_json("https://unstop.com/api/public/opportunity/search-result?"
-                        f"opportunity={opp}&per_page=15&oppstatus=open")
+                        f"opportunity={opp}&per_page=50&oppstatus=open")
         items = (((data or {}).get("data") or {}).get("data") or [])
         for h in items:
             title = h.get("title", "")
             org = ((h.get("organisation") or {}).get("name") or "Unstop")
+            if not ppo_track(org, title):
+                continue  # skip college fests / unknown organizers
             slug = h.get("public_url") or h.get("seo_url") or ""
             url = slug if slug.startswith("http") else f"https://unstop.com/{slug.lstrip('/')}"
             item = make_item(f"{org} (Unstop)", title, "India", url, "competition")
-            item["score"] += 15
+            item["score"] += 40  # corporate PPI/PPO-track competition
             out.append(item)
     return out
 
@@ -243,8 +286,7 @@ def fetch_linkedin():
 
 
 def fetch_hn_whoishiring():
-    """Intern mentions in the latest HN Who's Hiring thread. Off by default — free-text
-    comments are hard to vet for company quality."""
+    """Intern mentions in the latest HN Who's Hiring thread. Off by default."""
     out = []
     data = get_json("https://hn.algolia.com/api/v1/search_by_date?"
                     "tags=story,author_whoishiring&query=hiring&hitsPerPage=1")
@@ -313,6 +355,7 @@ def render(items, new_keys, brief):
         "brief": brief,
         "items": [{"source": i["source"], "title": i["title"], "company": i["company"],
                    "tier": i["tier"], "category": i["category"],
+                   "role_type": i["role_type"], "term": i["term"],
                    "location": i["location"], "url": i["url"],
                    "score": i["score"], "kind": i["kind"],
                    "new": i["key"] in new_keys,
@@ -344,25 +387,18 @@ def main():
         i["key"] = i["url"] or (i["source"] + i["title"])
         uniq.append(i)
 
-    # quality floor: drop long-tail junk below min_score. Unknown/tier3
-    # companies need a stronger combined signal (location+keywords) to
-    # qualify, since there's no company-reputation signal backing them up —
-    # this is what keeps random small companies from drowning out
-    # top-tier ones in the feed.
+    # quality floor: tier3 companies need a stronger combined signal to qualify
     min_score = CONFIG.get("min_score", 0)
     min_score_tier3 = CONFIG.get("min_score_tier3", min_score)
     uniq = [i for i in uniq
             if i["score"] >= (min_score_tier3 if i["tier"] == "tier3" else min_score)]
 
     uniq.sort(key=lambda i: -i["score"])
-
-    # cap total size so the feed stays readable
-    max_items = CONFIG.get("max_items", 200)
-    uniq = uniq[:max_items]
+    uniq = uniq[:CONFIG.get("max_items", 200)]
 
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     old = json.load(open(SEEN_PATH)) if os.path.exists(SEEN_PATH) else {}
-    if isinstance(old, list):  # migrate old format
+    if isinstance(old, list):
         old = {k: today for k in old}
     new_keys = {i["key"] for i in uniq} - set(old)
     for i in uniq:
