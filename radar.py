@@ -64,24 +64,52 @@ def term_year(title):
     return max(years) if years else None
 
 
+UAS = [
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64; rv:127.0) Gecko/20100101 Firefox/127.0",
+]
+
+
+def _fetch(url, timeout=20, retries=2):
+    """Robust GET: retries with exponential backoff + UA rotation.
+    404 = board doesn't exist on this ATS → no retry, fail silent."""
+    import time, random
+    last = None
+    for attempt in range(retries + 1):
+        try:
+            req = urllib.request.Request(url, headers={
+                "User-Agent": random.choice(UAS),
+                "Accept": "application/json, text/html;q=0.9, */*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.9"})
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                return r.read().decode("utf-8", "replace")
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                return None  # board not on this ATS — expected, skip quietly
+            last = e
+        except Exception as e:
+            last = e
+        if attempt < retries:
+            time.sleep(1.5 * (attempt + 1) + random.random())
+    print(f"  ! {url.split('/')[2]}: {last}", file=sys.stderr)
+    return None
+
+
 def get_json(url, timeout=20):
+    raw = _fetch(url, timeout)
+    if raw is None:
+        return None
     try:
-        req = urllib.request.Request(url, headers=UA)
-        with urllib.request.urlopen(req, timeout=timeout) as r:
-            return json.loads(r.read().decode("utf-8", "replace"))
-    except Exception as e:
-        print(f"  ! {url.split('/')[2]}: {e}", file=sys.stderr)
+        return json.loads(raw)
+    except ValueError:
         return None
 
 
 def get_text(url, timeout=20):
-    try:
-        req = urllib.request.Request(url, headers=UA)
-        with urllib.request.urlopen(req, timeout=timeout) as r:
-            return r.read().decode("utf-8", "replace")
-    except Exception as e:
-        print(f"  ! {url.split('/')[2]}: {e}", file=sys.stderr)
-        return ""
+    return _fetch(url, timeout) or ""
 
 
 def display_name(slug_or_name):
@@ -270,7 +298,7 @@ def fetch_linkedin():
     for q in CONFIG.get("linkedin_searches", []):
         url = ("https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/"
                f"search?keywords={quote(q['keywords'])}&location={quote(q['location'])}"
-               "&f_TPR=r86400&start=0")
+               "&f_TPR=r604800&start=0")  # last 7 days — better India coverage
         html_txt = get_text(url)
         cards = re.findall(
             r'<a[^>]*base-card__full-link[^>]*href="([^"]+)"[^>]*>.*?'
@@ -321,6 +349,87 @@ SOURCE_FNS = {
 }
 
 
+def _gemini(prompt, timeout=60, json_mode=False):
+    """One Gemini call (free tier). Returns response text or None."""
+    key = os.environ.get("GEMINI_API_KEY")
+    if not key:
+        return None
+    body = {"contents": [{"parts": [{"text": prompt}]}]}
+    if json_mode:
+        body["generationConfig"] = {"responseMimeType": "application/json"}
+    try:
+        req = urllib.request.Request(
+            "https://generativelanguage.googleapis.com/v1beta/models/"
+            "gemini-2.0-flash:generateContent?key=" + key,
+            data=json.dumps(body).encode(),
+            headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            d = json.loads(r.read())
+        return d["candidates"][0]["content"]["parts"][0]["text"]
+    except Exception as e:
+        print(f"  ! gemini: {e}", file=sys.stderr)
+        return None
+
+
+AI_FILTER_PROMPT = """You are vetting opportunities for a 3rd-year Chemical Engineering
+student at IIT Bombay targeting SUMMER 2027 internships in SDE / AI-ML / fintech /
+product, preferably Bangalore/India, open to remote and abroad.
+
+For each numbered item, judge from the title/company/location:
+- drop full-time or experienced-hire roles, staffing agencies, body shops,
+  training-institute "internships" that charge fees, college-fest competitions,
+  and roles for past terms (Summer/Fall 2026 or earlier).
+- Keep genuine internships/co-ops/fellowships at real companies, PPO-track
+  corporate competitions, and roles plausibly open for Summer 2027 applicants.
+- fit = 0-100: how valuable this is for THIS student (company reputation,
+  role relevance, India/Bangalore accessibility, career impact).
+
+Return ONLY a JSON array: [{"i": <item number>, "keep": true/false, "fit": <0-100>,
+"why": "<max 8 words>"}] — one entry per item, no other text.
+
+Items:
+"""
+
+
+def ai_filter(items):
+    """LLM quality pass: drops junk regex can't catch, adds fit score + reason.
+    No API key or any failure → items returned unchanged (rule-based fallback)."""
+    if not os.environ.get("GEMINI_API_KEY") or not items:
+        return items
+    out, chunk_size = [], 40
+    for start in range(0, len(items), chunk_size):
+        chunk = items[start:start + chunk_size]
+        listing = "\n".join(
+            f"{n}. [{i['kind']}] {i['title']} @ {i['company']} "
+            f"({i['location']}, via {i['source']})"
+            for n, i in enumerate(chunk))
+        resp = _gemini(AI_FILTER_PROMPT + listing, json_mode=True)
+        verdicts = {}
+        try:
+            for v in json.loads(resp or "[]"):
+                verdicts[int(v["i"])] = v
+        except Exception as e:
+            print(f"  ! ai_filter parse: {e}", file=sys.stderr)
+        if not verdicts:          # this chunk failed — keep it untouched
+            out += chunk
+            continue
+        for n, i in enumerate(chunk):
+            v = verdicts.get(n)
+            if v is None:
+                out.append(i)
+                continue
+            if not v.get("keep", True):
+                continue
+            fit = max(0, min(100, int(v.get("fit", 50))))
+            i["ai_fit"] = fit
+            i["ai_why"] = str(v.get("why", ""))[:60]
+            i["score"] += fit      # blend rule score + AI fit
+            out.append(i)
+    dropped = len(items) - len(out)
+    print(f"AI filter: kept {len(out)}, dropped {dropped}")
+    return out
+
+
 def ai_brief(items):
     key = os.environ.get("GEMINI_API_KEY")
     if not key or not items:
@@ -356,6 +465,7 @@ def render(items, new_keys, brief):
         "items": [{"source": i["source"], "title": i["title"], "company": i["company"],
                    "tier": i["tier"], "category": i["category"],
                    "role_type": i["role_type"], "term": i["term"],
+                   "ai_fit": i.get("ai_fit"), "ai_why": i.get("ai_why", ""),
                    "location": i["location"], "url": i["url"],
                    "score": i["score"], "kind": i["kind"],
                    "new": i["key"] in new_keys,
@@ -373,7 +483,11 @@ def main():
         if key not in SOURCE_FNS:
             continue
         name, fn = SOURCE_FNS[key]
-        got = fn()
+        try:
+            got = fn()
+        except Exception as e:  # one broken source must never kill the run
+            print(f"  ! {name} crashed: {e}", file=sys.stderr)
+            got = []
         print(f"{name}: {len(got)} matches")
         items += got
 
@@ -392,6 +506,8 @@ def main():
     min_score_tier3 = CONFIG.get("min_score_tier3", min_score)
     uniq = [i for i in uniq
             if i["score"] >= (min_score_tier3 if i["tier"] == "tier3" else min_score)]
+
+    uniq = ai_filter(uniq)  # LLM vetting pass (no-op without GEMINI_API_KEY)
 
     uniq.sort(key=lambda i: -i["score"])
     uniq = uniq[:CONFIG.get("max_items", 200)]

@@ -4,25 +4,47 @@
     "coinbase", "robinhood", "airbnb", "duolingo", "figma", "notion",
     "scaleai", "anthropic", "pinterest", "reddit", "dropbox", "brex",
     "affirm", "plaid", "samsara", "verkada", "flexport", "nianticlabs",
-    "juspay", "groww", "zeptonow", "meesho", "urbancompany"
+    "juspay", "groww", "zeptonow", "meesho", "urbancompany",
+    "gitlab", "datadog", "mongodb", "asana", "airtable", "instacart",
+    "lyft", "doordashusa", "discord", "chime", "checkr", "benchling",
+    "andurilindustries", "vercel", "airbyte", "hashicorp", "sourcegraph",
+    "temporaltechnologies", "wise", "phonepe", "swiggy", "zomato",
+    "flipkart", "myntra", "navi", "jupitermoney", "smallcase", "dream11",
+    "gameskraft", "sharechat", "glance", "inmobi", "hudsonrivertrading",
+    "janestreet", "twosigma", "citadel", "point72", "deshaw", "optiverus",
+    "imc", "akunacapital", "virtu", "squarepointcapital", "arcesium",
+    "sprinklr", "browserstack", "freshworks", "chargebee", "hasura",
+    "signoz", "lambdatestinc"
   ],
   "lever_companies": [
     "netflix", "palantir", "atlassian", "plum", "cred", "dunzo",
     "razorpay", "zetwerk", "slice", "netomi", "innovaccer", "postman",
-    "hackerrank", "whatfix", "kiwitech"
+    "hackerrank", "whatfix", "kiwitech", "spotify", "mistplay",
+    "voleon", "fivetran", "wealthsimple", "zluri", "yellow", "leadsquared",
+    "paytm", "zoho", "swile"
   ],
   "ashby_boards": [
     "openai", "ramp", "linear", "replit", "cursor", "perplexity-ai",
-    "elevenlabs", "mistral", "sierra", "supabase", "posthog", "zerodha"
+    "elevenlabs", "mistral", "sierra", "supabase", "posthog", "zerodha",
+    "anysphere", "cohere", "together-ai", "groq", "modal", "browser-company",
+    "vanta", "mercury", "deel", "notion", "windsurf", "lovable", "decagon",
+    "harvey", "glean", "clay", "retool", "warp", "temporal"
   ],
 
-  "enabled_sources": ["greenhouse", "lever", "ashby", "remoteok", "devpost", "unstop"],
+  "enabled_sources": ["greenhouse", "lever", "ashby", "remoteok", "devpost", "unstop", "linkedin", "hn"],
 
   "linkedin_searches": [
     {"keywords": "software engineering intern 2027", "location": "Bengaluru, Karnataka, India"},
+    {"keywords": "software engineer intern summer 2027", "location": "India"},
     {"keywords": "machine learning intern", "location": "Bengaluru, Karnataka, India"},
     {"keywords": "AI intern", "location": "India"},
-    {"keywords": "software intern", "location": "Singapore"}
+    {"keywords": "data science intern", "location": "Bengaluru, Karnataka, India"},
+    {"keywords": "product management intern", "location": "Bengaluru, Karnataka, India"},
+    {"keywords": "quantitative intern", "location": "India"},
+    {"keywords": "fintech intern", "location": "Mumbai, Maharashtra, India"},
+    {"keywords": "software intern", "location": "Singapore"},
+    {"keywords": "software engineering intern 2027", "location": "United Arab Emirates"},
+    {"keywords": "machine learning intern", "location": "Remote"}
   ],
 
   "competition_orgs_allow": [
@@ -62,18 +84,55 @@
     "whatfix": "Whatfix", "kiwitech": "KiwiTech", "ramp": "Ramp",
     "linear": "Linear", "sierra": "Sierra", "supabase": "Supabase",
     "posthog": "PostHog", "zerodha": "Zerodha", "rippling": "Rippling",
-    "gustohq": "Gusto"
+    "gustohq": "Gusto", "gitlab": "GitLab", "datadog": "Datadog",
+    "mongodb": "MongoDB", "asana": "Asana", "airtable": "Airtable",
+    "instacart": "Instacart", "lyft": "Lyft", "doordashusa": "DoorDash",
+    "discord": "Discord", "chime": "Chime", "checkr": "Checkr",
+    "benchling": "Benchling", "andurilindustries": "Anduril", "vercel": "Vercel",
+    "airbyte": "Airbyte", "hashicorp": "HashiCorp", "sourcegraph": "Sourcegraph",
+    "temporaltechnologies": "Temporal", "wise": "Wise", "phonepe": "PhonePe",
+    "swiggy": "Swiggy", "zomato": "Zomato", "flipkart": "Flipkart",
+    "myntra": "Myntra", "navi": "Navi", "jupitermoney": "Jupiter",
+    "smallcase": "smallcase", "dream11": "Dream11", "gameskraft": "Gameskraft",
+    "sharechat": "ShareChat", "glance": "Glance", "inmobi": "InMobi",
+    "hudsonrivertrading": "Hudson River Trading", "janestreet": "Jane Street",
+    "twosigma": "Two Sigma", "citadel": "Citadel", "point72": "Point72",
+    "deshaw": "D. E. Shaw", "optiverus": "Optiver", "imc": "IMC Trading",
+    "akunacapital": "Akuna Capital", "virtu": "Virtu Financial",
+    "squarepointcapital": "Squarepoint", "arcesium": "Arcesium",
+    "sprinklr": "Sprinklr", "browserstack": "BrowserStack",
+    "freshworks": "Freshworks", "chargebee": "Chargebee", "hasura": "Hasura",
+    "signoz": "SigNoz", "lambdatestinc": "LambdaTest", "spotify": "Spotify",
+    "fivetran": "Fivetran", "wealthsimple": "Wealthsimple", "paytm": "Paytm",
+    "zoho": "Zoho", "anysphere": "Cursor (Anysphere)", "cohere": "Cohere",
+    "together-ai": "Together AI", "groq": "Groq", "modal": "Modal",
+    "browser-company": "The Browser Company", "vanta": "Vanta",
+    "mercury": "Mercury", "deel": "Deel", "windsurf": "Windsurf",
+    "lovable": "Lovable", "decagon": "Decagon", "harvey": "Harvey",
+    "glean": "Glean", "clay": "Clay", "retool": "Retool", "warp": "Warp",
+    "temporal": "Temporal"
   },
 
   "company_tiers": {
     "tier1": ["openai", "anthropic", "scaleai", "palantir", "perplexity-ai",
-              "mistral", "stripe", "databricks", "cursor", "elevenlabs"],
+              "mistral", "stripe", "databricks", "cursor", "elevenlabs",
+              "janestreet", "citadel", "twosigma", "deshaw", "hudsonrivertrading",
+              "optiverus", "akunacapital", "imc", "cohere", "anysphere",
+              "together-ai", "groq", "harvey", "windsurf"],
     "tier2": ["netflix", "cloudflare", "twilio", "coinbase", "robinhood",
               "airbnb", "figma", "notion", "atlassian", "ramp", "linear",
               "replit", "sierra", "supabase", "posthog", "reddit", "dropbox",
               "brex", "affirm", "plaid", "samsara", "verkada", "flexport",
               "duolingo", "pinterest", "razorpay", "cred", "zerodha",
-              "postman", "groww", "zetwerk"]
+              "postman", "groww", "zetwerk", "gitlab", "datadog", "mongodb",
+              "asana", "airtable", "instacart", "lyft", "doordashusa",
+              "discord", "vercel", "hashicorp", "wise", "phonepe", "swiggy",
+              "zomato", "flipkart", "myntra", "navi", "dream11", "sharechat",
+              "inmobi", "freshworks", "browserstack", "chargebee", "sprinklr",
+              "arcesium", "squarepointcapital", "virtu", "point72", "spotify",
+              "fivetran", "paytm", "zoho", "vanta", "mercury", "deel",
+              "glean", "clay", "retool", "warp", "modal", "lovable", "decagon",
+              "andurilindustries", "sourcegraph"]
   },
   "tier_boosts": {"tier1": 120, "tier2": 60, "tier3": 0},
 
@@ -114,5 +173,5 @@
   "min_term_year": 2026,
   "min_score": 15,
   "min_score_tier3": 35,
-  "max_items": 150
+  "max_items": 300
 }
