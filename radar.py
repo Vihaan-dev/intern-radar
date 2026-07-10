@@ -337,7 +337,106 @@ def fetch_hn_whoishiring():
     return out
 
 
+def post_json(url, payload, timeout=25):
+    """POST JSON with the same retry/backoff strategy as _fetch."""
+    import time, random
+    last = None
+    for attempt in range(3):
+        try:
+            req = urllib.request.Request(url, data=json.dumps(payload).encode(),
+                headers={"User-Agent": random.choice(UAS),
+                         "Content-Type": "application/json",
+                         "Accept": "application/json"})
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                return json.loads(r.read().decode("utf-8", "replace"))
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                return None
+            last = e
+        except Exception as e:
+            last = e
+        if attempt < 2:
+            time.sleep(1.5 * (attempt + 1) + random.random())
+    print(f"  ! {url.split('/')[2]}: {last}", file=sys.stderr)
+    return None
+
+
+def fetch_workday():
+    """Workday-hosted career sites (Wells Fargo, NVIDIA, Salesforce, banks...).
+    Public JSON API: POST /wday/cxs/{tenant}/{site}/jobs. Config-driven; wrong
+    tenant/site entries just 404 silently."""
+    out = []
+    for b in CONFIG.get("workday_boards", []):
+        base = f"https://{b['tenant']}.{b['wd']}.myworkdayjobs.com"
+        data = post_json(f"{base}/wday/cxs/{b['tenant']}/{b['site']}/jobs",
+                         {"searchText": "intern", "limit": 20, "offset": 0,
+                          "appliedFacets": {}})
+        for j in (data or {}).get("jobPostings", []):
+            title = j.get("title", "")
+            loc = j.get("locationsText", "") or ""
+            path = j.get("externalPath", "")
+            if not title or not path or not matches(title):
+                continue
+            item = make_item(f"{b['name']} (Workday)", title, loc,
+                             f"{base}/en-US/{b['site']}{path}", "job")
+            item["company"] = b["name"]
+            item["score"] += 30  # big-brand employer, direct source
+            out.append(item)
+    return out
+
+
+SIMPLIFY_ROW_RE = re.compile(r"<tr>(.*?)</tr>", re.S)
+TD_RE = re.compile(r"<td[^>]*>(.*?)</td>", re.S)
+HREF_RE = re.compile(r'href="([^"]+)"')
+TAG_RE = re.compile(r"<[^>]+>")
+
+
+def fetch_simplify():
+    """SimplifyJobs GitHub internship lists — community + hourly automated
+    monitoring of top companies' career pages (covers Workday/custom portals
+    that ATS APIs miss). The most encompassing curated source available."""
+    out = []
+    for repo in CONFIG.get("simplify_repos", []):
+        md = get_text(f"https://raw.githubusercontent.com/SimplifyJobs/{repo}/dev/README.md")
+        if not md or "<tr>" not in md:
+            continue
+        last_company = ""
+        for row in SIMPLIFY_ROW_RE.findall(md):
+            tds = TD_RE.findall(row)
+            if len(tds) < 4:
+                continue
+            company = TAG_RE.sub("", tds[0]).strip()
+            if not company or company == "↳":
+                company = last_company
+            else:
+                last_company = company
+            title = TAG_RE.sub("", tds[1]).strip()
+            if "🔒" in row or "🔒" in title:
+                continue  # closed listing
+            title = title.replace("🛂", "").replace("🇺🇸", "").replace("🎓", "").strip()
+            loc = TAG_RE.sub(" ", tds[2])
+            loc = re.sub(r"\s*\d+ locations?\s*", "", loc)
+            loc = re.sub(r"\s+", " ", loc).replace("<br>", "; ").strip()
+            m = HREF_RE.search(tds[3])
+            if not m:
+                continue
+            url = m.group(1).split("?utm_source")[0].split("&utm_source")[0]
+            if not matches(title, title + " intern"):
+                continue
+            item = make_item("Simplify (GitHub)", title, loc, url, "job")
+            item["company"] = company
+            slug = company.lower().replace(" ", "").replace(".", "")
+            item["tier"] = company_tier(slug)
+            item["score"] += 25 + TIER_BOOSTS.get(item["tier"], 0)
+            out.append(item)
+        if out:
+            break  # first repo that exists (2027 once live, else 2026)
+    return out
+
+
 SOURCE_FNS = {
+    "simplify": ("Simplify", fetch_simplify),
+    "workday": ("Workday", fetch_workday),
     "greenhouse": ("Greenhouse", fetch_greenhouse),
     "lever": ("Lever", fetch_lever),
     "ashby": ("Ashby", fetch_ashby),

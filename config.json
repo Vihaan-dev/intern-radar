@@ -31,7 +31,34 @@
     "harvey", "glean", "clay", "retool", "warp", "temporal"
   ],
 
-  "enabled_sources": ["greenhouse", "lever", "ashby", "remoteok", "devpost", "unstop", "linkedin", "hn"],
+  "enabled_sources": ["simplify", "workday", "greenhouse", "lever", "ashby", "remoteok", "devpost", "unstop", "linkedin", "hn"],
+
+  "simplify_repos": ["Summer2027-Internships", "Summer2026-Internships"],
+
+  "workday_boards": [
+    {"tenant": "wellsfargo", "wd": "wd1", "site": "WellsFargoJobs", "name": "Wells Fargo"},
+    {"tenant": "wf", "wd": "wd1", "site": "WellsFargoJobs", "name": "Wells Fargo"},
+    {"tenant": "nvidia", "wd": "wd5", "site": "NVIDIAExternalCareerSite", "name": "NVIDIA"},
+    {"tenant": "salesforce", "wd": "wd12", "site": "External_Career_Site", "name": "Salesforce"},
+    {"tenant": "adobe", "wd": "wd5", "site": "external_experienced", "name": "Adobe"},
+    {"tenant": "mastercard", "wd": "wd1", "site": "CorporateCareers", "name": "Mastercard"},
+    {"tenant": "aexp", "wd": "wd3", "site": "JobSearch", "name": "American Express"},
+    {"tenant": "citi", "wd": "wd5", "site": "2", "name": "Citi"},
+    {"tenant": "gs", "wd": "wd5", "site": "GoldmanSachsCareers", "name": "Goldman Sachs"},
+    {"tenant": "morganstanley", "wd": "wd5", "site": "External", "name": "Morgan Stanley"},
+    {"tenant": "hsbc", "wd": "wd3", "site": "External", "name": "HSBC"},
+    {"tenant": "db", "wd": "wd3", "site": "DBWebsite", "name": "Deutsche Bank"},
+    {"tenant": "blackrock", "wd": "wd1", "site": "BlackRock_Professional", "name": "BlackRock"},
+    {"tenant": "paloaltonetworks", "wd": "wd5", "site": "panwexternalcareers", "name": "Palo Alto Networks"},
+    {"tenant": "qualcomm", "wd": "wd5", "site": "External", "name": "Qualcomm"},
+    {"tenant": "intel", "wd": "wd1", "site": "External", "name": "Intel"},
+    {"tenant": "texasinstruments", "wd": "wd12", "site": "External_Career_Site", "name": "Texas Instruments"},
+    {"tenant": "walmart", "wd": "wd5", "site": "WalmartExternal", "name": "Walmart Global Tech"},
+    {"tenant": "target", "wd": "wd5", "site": "targetcareers", "name": "Target"},
+    {"tenant": "sap", "wd": "wd3", "site": "SAPCareers", "name": "SAP"},
+    {"tenant": "vmware", "wd": "wd1", "site": "VMware", "name": "VMware"},
+    {"tenant": "workday", "wd": "wd5", "site": "Workday", "name": "Workday"}
+  ],
 
   "linkedin_searches": [
     {"keywords": "software engineering intern 2027", "location": "Bengaluru, Karnataka, India"},
